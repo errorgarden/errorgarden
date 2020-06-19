@@ -120,6 +120,7 @@ const EG = {
     },
 
     errors: [
+        {message: "One morning I shot an elephant in my pajamas. How he got into my pajamas I'll never know.\n\nGrouch Marx",audio:"elephant",id:"marx-413",icon:"1F418"},
         {message: "The cow is of the bovine ilk; one end is moo, the other milk.\n\nOgden Nash", audio: "cow", id: "cow-1", icon: "1f404"},
         {message: "Delay is preferable to error.\n\nThomas Jefferson", audio: "toot1", id: "tj-504", icon: "1F422"},
         {message: "A crust eaten in peace is better than a banquet partaken in anxiety.\n\nAesop", id: "mouse-8", audio: "mouse", icon: "1F401"},
