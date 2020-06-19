@@ -120,6 +120,7 @@ const EG = {
     },
 
     errors: [
+        {message:"It is not enough to be busy; so are the ants. The question is: What are we busy about?\n\nHenry David Thoreau",audio:"toot1",id:"hank-503",icon:"1F41C"},
         {message: "One morning I shot an elephant in my pajamas. How he got into my pajamas I'll never know.\n\nGrouch Marx",audio:"elephant",id:"marx-413",icon:"1F418"},
         {message: "The cow is of the bovine ilk; one end is moo, the other milk.\n\nOgden Nash", audio: "cow", id: "cow-1", icon: "1f404"},
         {message: "Delay is preferable to error.\n\nThomas Jefferson", audio: "toot1", id: "tj-504", icon: "1F422"},
@@ -130,7 +131,7 @@ const EG = {
         {message: "To err is Humane; to Forgive, Divine.\n\nAlexander Pope", icon: "1F331", audio: "slideWhistle", id: "pope-3"},
         {message: "Anyone who has never made a mistake has never tried anything new.\n\nAlbert Einstein", icon: "1F30C", audio: "slideWhistle", id: "al-2"},
         {message: "Everyone makes mistakes.  Get off your high horse!", icon: "1F40E", audio: "horse", id: "horse-5"},
-        {message: "Not until we are lost do we begin to understand ourselves.\n\nHenry David Throeau", audio: "windChimes", id: "hank-404", icon: "1F9ED"},
+        {message: "Not until we are lost do we begin to understand ourselves.\n\nHenry David Thoreau", audio: "windChimes", id: "hank-404", icon: "1F9ED"},
         {message: "There are some defeats more triumphant than victories.\n\nMichel de Montaigne", audio: "toot1", id: "monty-500", icon: "1F4A3"},
         {message: "I want death to find me planting my cabbages.\n\nMichel de Montaigne", audio: "toot1", id: "monty-400", icon: "1F96C"},
         {message: "Life has no meaning the moment you lose the illusion of being eternal.\n\nJean-Paul Sartre", audio: "toot3", id: "life-7", icon: "1f333"}],
