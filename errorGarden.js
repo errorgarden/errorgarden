@@ -7,6 +7,36 @@ const EG = {
         EG.generateErrorModal(message, config, errorObj);
     },
 
+    getErrorById: function (id) {
+        let errorObj = false;
+        EG.getAllErrors().forEach(function (e) {
+            if (e.id == id) {
+                errorObj = e;
+            }
+        });
+        return errorObj;
+    },
+
+    getGenericHttpError: function () {
+        return EG.getErrorById('HTTP');
+    },
+
+    showHttpError: function (httpResponseCode, message, config = {}){
+        let possibleErrors = [], errorObj = false;
+        EG.getAllErrors().forEach(function (e) {
+            if (e.attributes && e.attributes.includes('http')) {
+                if (e.id == httpResponseCode) {
+                    errorObj = e;
+                }
+            }
+        });
+        if (errorObj === false) {
+            errorObj = EG.getGenericHttpError()
+        }
+        errorObj.displayId = httpResponseCode + ' ' + EG.httpResponseCodes[httpResponseCode];
+        EG.generateErrorModal(message, config, errorObj);
+    },
+
     getAllErrors: function () {
         //Clone object
         return JSON.parse(JSON.stringify(EG.errors));
@@ -35,14 +65,15 @@ const EG = {
         errorCard.id = 'eg-card-' + errorObj.id;
         errorCardWrapper.id = 'eg-card-wrapper-' + errorObj.id;
 
-        errorNumber.style['color'] = 'red';
-        errorNumber.style['font-size'] = '1rem';
+        errorNumber.style['color'] = 'black';
+        errorNumber.style['font-size'] = '1.75rem';
         errorNumber.style['font-weight'] = 'bold';
         errorNumber.style['margin-top'] = '0.5rem';
+        let errorNumberText;
         if (errorObj.displayId) {
-            errorNumber.innerHTML = errorObj.displayId;
+            errorNumberText = errorObj.displayId;
         } else {
-            errorNumber.innerHTML = errorObj.id.toUpperCase() + ' Error';
+            errorNumberText = errorObj.id + ' Error';
         }
         errorCardWrapper.style['position'] = 'fixed';
         errorCardWrapper.style['left'] = '0';
@@ -63,8 +94,8 @@ const EG = {
         errorCard.style['border-radius'] = "0.5rem";
 
         errorIcon.id = 'eg-icon-id';
-        errorIcon.style['font-size'] = "2.5rem";
-        errorIcon.innerHTML = '&#x' + errorObj.icon + ';';
+        errorIcon.style['font-size'] = "2.0rem";
+        errorIcon.innerHTML = '&#x' + errorObj.icon + ';&nbsp;' + errorNumberText;
 
         audio.src = EG.audio[errorObj.audio];
         audio.id = 'audio-id-' + errorObj.id;
@@ -73,19 +104,20 @@ const EG = {
         errorCard.appendChild(audio);
 
         errorCard.appendChild(errorIcon);
-        errorCard.appendChild(errorNumber);
+        // errorCard.appendChild(errorNumber);
 
         if (message) {
-            errorMessage.style['font-size'] = '1.2rem';
+            errorMessage.style['font-size'] = '1.5rem';
             errorMessage.style['font-weight'] = 'bold';
-            errorMessage.style['margin-top'] = '1rem';
+            errorMessage.style['margin-top'] = '1.5rem';
             errorMessage.innerHTML = message;
             errorCard.appendChild(errorMessage);
         }
 
-        errorGardenMessage.style['font-size'] = '1.5rem';
+        errorGardenMessage.style['font-size'] = '1.25rem';
         errorGardenMessage.style['color'] = "#505050";
-        errorGardenMessage.style['margin-top'] = '1rem';
+        errorGardenMessage.style['margin-top'] = '1.5rem';
+        // errorGardenMessage.style['border-top'] = '1px solid gray';
         errorGardenMessage.innerHTML = EG.newlineToBreakTag(errorObj.message);
         errorCard.appendChild(errorGardenMessage);
 
@@ -111,7 +143,23 @@ const EG = {
 
         errorCardWrapper.appendChild(errorCard);
         document.body.appendChild(errorCardWrapper);
-        audio.play();
+        let playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise.then(_ => {
+            })
+            .catch(error => {
+                let playButton = document.createElement("div");        
+                playButton.style['margin-top'] = '0.5rem';
+                playButton.innerHTML = '&#x1F50A';
+                playButton.onclick = function (e) {
+                    e.stopPropagation();
+                    audio.play();
+                };
+                errorCard.appendChild(playButton);
+            });
+        }
+        ;
+
     },
 
     getRandomAudio: function () {
@@ -119,23 +167,27 @@ const EG = {
         return EG.audio[keys[ keys.length * Math.random() << 0]];
     },
 
+    httpResponseCodes: {'500': 'Internal Server Error',
+        '404': 'Not Found', '504': 'Gateway Timeout', '503': 'Service Unavailable', '400': 'Bad Request', 'HTTP': 'Error'},
+
     errors: [
-        {message: "Bee colonies can be started by a single foundress queen that survives the winter.", id: "bee-1", icon: "1F41D", audio: "crickets"},
-        {message: "It is not enough to be busy; so are the ants. The question is: What are we busy about?\n\nHenry David Thoreau", audio: "toot1", id: "hank-503", icon: "1F41C"},
-        {message: "One morning I shot an elephant in my pajamas. How he got into my pajamas I'll never know.\n\nGrouch Marx", audio: "elephant", id: "marx-413", icon: "1F418"},
-        {message: "The cow is of the bovine ilk; one end is moo, the other milk.\n\nOgden Nash", audio: "cow", id: "cow-1", icon: "1f404"},
-        {message: "Delay is preferable to error.\n\nThomas Jefferson", audio: "toot1", id: "tj-504", icon: "1F422"},
-        {message: "A crust eaten in peace is better than a banquet partaken in anxiety.\n\nAesop", id: "mouse-8", audio: "mouse", icon: "1F401"},
-        {message: "I have not failed. I've just found 10,000 ways that won't work.\n\nThomas A. Edison", id: "tom-3", audio: "spring", icon: "1F4A1"},
-        {message: "The only man who never makes a mistake is the man who never does anything.\n\nTeddy Roosevelt", id: "teddy-3", audio: "toot1", icon: "1f9f8"},
-        {message: "Wind is the flow of gases on a large scale.", icon: "1f390", audio: "windChimes", id: "wind-13"},
-        {message: "To err is Humane; to Forgive, Divine.\n\nAlexander Pope", icon: "1F331", audio: "slideWhistle", id: "pope-3"},
-        {message: "Anyone who has never made a mistake has never tried anything new.\n\nAlbert Einstein", icon: "1F30C", audio: "slideWhistle", id: "al-2"},
-        {message: "Everyone makes mistakes.  Get off your high horse!", icon: "1F40E", audio: "horse", id: "horse-5"},
-        {message: "Not until we are lost do we begin to understand ourselves.\n\nHenry David Thoreau", audio: "windChimes", id: "hank-404", icon: "1F9ED"},
-        {message: "There are some defeats more triumphant than victories.\n\nMichel de Montaigne", audio: "toot1", id: "monty-500", icon: "1F4A3"},
-        {message: "I want death to find me planting my cabbages.\n\nMichel de Montaigne", audio: "toot1", id: "monty-400", icon: "1F96C"},
-        {message: "Life has no meaning the moment you lose the illusion of being eternal.\n\nJean-Paul Sartre", audio: "toot3", id: "life-7", icon: "1f333"}],
+        {attributes: ['http'], message: "To err is human; to forgive, divine.\n\nAlexaner Pope", id: "HTTP", audio: "spring", icon: "2757"},
+        {message: "Bee colonies can be started by a single foundress queen that survives the winter.", id: "Bee", icon: "1F41D", audio: "crickets"},
+        {attributes: ['http'], message: "It is not enough to be busy; so are the ants. The question is: What are we busy about?\n\nHenry David Thoreau", audio: "toot1", id: "503", icon: "1F41C"},
+        {message: "One morning I shot an elephant in my pajamas. How he got into my pajamas I'll never know.\n\nGrouch Marx", audio: "elephant", id: "Marx", icon: "1F418"},
+        {message: "The cow is of the bovine ilk; one end is moo, the other milk.\n\nOgden Nash", audio: "cow", id: "Cow", icon: "1f404"},
+        {attributes: ['http'], message: "Delay is preferable to error.\n\nThomas Jefferson", audio: "toot1", id: "504", icon: "1F422"},
+        {message: "A crust eaten in peace is better than a banquet partaken in anxiety.\n\nAesop", id: "Mouse", audio: "mouse", icon: "1F401"},
+        {message: "I have not failed. I've just found 10,000 ways that won't work.\n\nThomas A. Edison", id: "Edison", audio: "spring", icon: "1F4A1"},
+        {message: "The only man who never makes a mistake is the man who never does anything.\n\nTeddy Roosevelt", id: "Teddy", audio: "toot1", icon: "1f9f8"},
+        {message: "Wind is the flow of gases on a large scale.", icon: "1f390", audio: "windChimes", id: "Wind"},
+        {message: "To err is Humane; to Forgive, Divine.\n\nAlexander Pope", icon: "1F331", audio: "slideWhistle", id: "Pope"},
+        {message: "Anyone who has never made a mistake has never tried anything new.\n\nAlbert Einstein", icon: "1F30C", audio: "slideWhistle", id: "Al"},
+        {message: "Everyone makes mistakes.  Get off your high horse!", icon: "1F40E", audio: "horse", id: "Horse"},
+        {attributes: ['http'], message: "Not until we are lost do we begin to understand ourselves.\n\nHenry David Thoreau", audio: "windChimes", id: "404", icon: "1F9ED"},
+        {attributes: ['http'], message: "There are some defeats more triumphant than victories.\n\nMichel de Montaigne", audio: "toot1", id: "500", icon: "1F4A3"},
+        {attributes: ['http'], message: "I want death to find me planting my cabbages.\n\nMichel de Montaigne", audio: "toot1", id: "400", icon: "1F96C"},
+        {message: "Life has no meaning the moment you lose the illusion of being eternal.\n\nJean-Paul Sartre", audio: "toot3", id: "Life", icon: "1f333"}],
 
     audio: {
         crickets: "data:audio/mp3;base64,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W/oWWOhoOCL/xRW7uUzSqxUTNSAAgIBwTN4aWaPUnJZt1P/8//sUxMIAREwdg8MEaAB7g/I8YwxMYbNqHZBX/4S/FWtw5VeJl4iIqJhlAAYkSaDGgw4KHobtpAr+DvmZYJB4nqVOng87/wCeF1K4u7oZomIeIiBhAAiLsolYyYGGAVD1//sUxMaAA9QVl4MYQLCGhfU8YQ1OIC15S6UkR/3dCShlZ/6ot8RWalZ4d4eHcYAAC3E4kYjkzUcWIPiIUHTr/FgdcYBj/q1/r8MM7xMTExBQoAACBhiVwQG8LAShRKDN//sUxMuABDQfneMMwDCAljC4UAtI6iYv8ETTv/p/gUP9Kmu929zcAYjACqySgII0idZewGMPmgAp/0B3Ppb/WpC/oFmdUzF9WVl4CsjAAFy75vuCjKjuNRAnAwBJTCP0//sUxNAARFRZr+MAUDB2A3Y8YpgGnLP0t1fUPSzLVVitu7mgAcRAAzZDhZAFWWcckWaOkwG3f+kUBwv/xMpH1t5R5mqqZqYAgSQAIHgRJzUZFIslOKhKpjU1X/jTTm/+//sUxNUABHAjoeGIajCGBHG8UxgAz89yqpu9/O7tAKhAAAVIQs+6WkgbUnUOGEhun/YkZV/rI3+bQsJURESEAAFyiFpezjcwwABY0cdpZ9BMNqDB/9eOCYH+aXkKZkiG//sUxNgABHwhg+MISACHC+/4kAoQiHiAiAQiQAAIAAC4ThnvM1lVkBP1zFhzYrVDnfPQrp6NOMqwuJs8cK8386G0Upfy0DgYxHWDDh0q7yhhCophmH///79SlmFMFNio//sUxNqABWg1leSZI9CXC7L4kYkmSI6Lw6E///xuJoK46LiC1UxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sUxNeABEwflcKYYHCIBDO4MQzOVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sUxNqABGwhicKYwECPBDE8kYEIVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sUxNwABFghg8MkwgCGhbS8YwyeVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sUxN8ARBQjkeMYQWCLgy+6jCAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sUxOKAB7yvedjygAB9C6RDgiABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV",
