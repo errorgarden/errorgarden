@@ -1,9 +1,17 @@
 const EG = {
-    showError: function (message, config, errorObj) {
-        if (errorObj === undefined) {
+    showError: function (message, config, id) {
+        if (id === undefined) {
             errorObj = EG.getRandomError();
-        }
-        ;
+        } else {
+            errorObj = EG.getErrorById(id);
+            let idToInt = parseInt(id, 10);
+            if (idToInt > 99 && idToInt < 599) {
+                if (errorObj === false) {
+                    errorObj = EG.getGenericHttpError();
+                }
+                errorObj.displayId = errorObj.id + ' ' + EG.httpResponseCodes[errorObj.id];
+            }
+        };
         EG.generateErrorModal(message, config, errorObj);
     },
 
@@ -19,22 +27,6 @@ const EG = {
 
     getGenericHttpError: function () {
         return EG.getErrorById('HTTP');
-    },
-
-    showHttpError: function (httpResponseCode, message, config = {}){
-        let possibleErrors = [], errorObj = false;
-        EG.getAllErrors().forEach(function (e) {
-            if (e.attributes && e.attributes.includes('http')) {
-                if (e.id == httpResponseCode) {
-                    errorObj = e;
-                }
-            }
-        });
-        if (errorObj === false) {
-            errorObj = EG.getGenericHttpError()
-        }
-        errorObj.displayId = httpResponseCode + ' ' + EG.httpResponseCodes[httpResponseCode];
-        EG.generateErrorModal(message, config, errorObj);
     },
 
     getAllErrors: function () {
@@ -60,7 +52,7 @@ const EG = {
                 errorCardWrapper = document.createElement("div"),
                 audio = document.createElement('audio'),
                 removeErrorModal, currentTitle = document.title,
-                nonce;
+                nonce,playPromise;
 
         errorCard.id = 'eg-card-' + errorObj.id;
         errorCardWrapper.id = 'eg-card-wrapper-' + errorObj.id;
@@ -143,20 +135,20 @@ const EG = {
 
         errorCardWrapper.appendChild(errorCard);
         document.body.appendChild(errorCardWrapper);
-        let playPromise = audio.play();
+        playPromise = audio.play();
         if (playPromise !== undefined) {
             playPromise.then(_ => {
             })
-            .catch(error => {
-                let playButton = document.createElement("div");        
-                playButton.style['margin-top'] = '0.5rem';
-                playButton.innerHTML = '&#x1F50A';
-                playButton.onclick = function (e) {
-                    e.stopPropagation();
-                    audio.play();
-                };
-                errorCard.appendChild(playButton);
-            });
+                    .catch(error => {
+                        let playButton = document.createElement("div");
+                        playButton.style['margin-top'] = '1.0rem';
+                        playButton.innerHTML = '[Play Sound]';
+                        playButton.onclick = function (e) {
+                            e.stopPropagation();
+                            audio.play();
+                        };
+                        errorCard.appendChild(playButton);
+                    });
         }
         ;
 
@@ -168,7 +160,11 @@ const EG = {
     },
 
     httpResponseCodes: {'500': 'Internal Server Error',
-        '404': 'Not Found', '504': 'Gateway Timeout', '503': 'Service Unavailable', '400': 'Bad Request', 'HTTP': 'Error'},
+        '404': 'Not Found', 
+        '504': 'Gateway Timeout', 
+        '503': 'Service Unavailable', 
+        '400': 'Bad Request', 
+        'HTTP': 'Error'},
 
     errors: [
         {attributes: ['http'], message: "To err is human; to forgive, divine.\n\nAlexaner Pope", id: "HTTP", audio: "spring", icon: "2757"},
